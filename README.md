@@ -19,35 +19,6 @@ Expected kernel for firmware `02.05.000` (built 2018-03-14): 3,854,680 bytes,
 md5 `f3b3de4f3651acf70a5e88988f83b05f`. A different md5 means a different firmware build;
 it may still work, but is untested.
 
-## Building
-
-Tested with the TWRP minimal manifest `platform_manifest_twrp_omni`, branch `twrp-5.1`
-(Android 5.1.1 base; `bootable/recovery` is TeamWin `android-9.0`, commit `90e5d95`),
-inside an Ubuntu 14.04 userland with OpenJDK 7 and Python 2.
-
-1. Sync the tree, then apply the patches from `patches/` inside `bootable/recovery`:
-   ```sh
-   cd bootable/recovery
-   git apply /path/to/this/repo/patches/0001-minuitwrp-board-defined-touch-range.patch
-   git apply /path/to/this/repo/patches/0002-partition-nullptr-to-NULL.patch
-   ```
-   - `0001` adds `TW_TOUCH_X_MIN/MAX` and `TW_TOUCH_Y_MIN/MAX`. **Required** for this device;
-     without it those board flags are silently ignored and touch is offset.
-   - `0002` replaces one `nullptr` with `NULL` so the tree compiles with the old toolchain.
-2. Put this repository at `device/benesse/40S404` as a **real directory** (copy or bind mount).
-   A symlink does not work: the product lookup does not follow it and falls through to a
-   network fetch.
-3. Add `prebuilt/zImage` (see above), then:
-   ```sh
-   source build/envsetup.sh
-   lunch omni_40S404-eng
-   ALLOW_MISSING_DEPENDENCIES=true mka recoveryimage
-   ```
-
-The result is about 8.26 MB for an 8,388,608-byte partition (roughly 130 KB spare), so
-adding features means removing something else. `TW_EXCLUDE_*` flags in `BoardConfig.mk`
-are already set for that reason.
-
 ## Flashing
 
 Back up the current recovery first, then write only `mmcblk0p2`:
