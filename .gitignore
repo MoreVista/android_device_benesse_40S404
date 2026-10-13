@@ -1,0 +1,4 @@
+# Vendor / firmware binaries are never committed. See README.md ("Kernel").
+*.img
+*.bin
+prebuilt/

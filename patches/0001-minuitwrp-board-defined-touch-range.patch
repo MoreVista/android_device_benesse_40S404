@@ -1,0 +1,57 @@
+diff --git a/minuitwrp/Android.mk b/minuitwrp/Android.mk
+index c844082..e56aa0a 100644
+--- a/minuitwrp/Android.mk
++++ b/minuitwrp/Android.mk
+@@ -187,6 +187,24 @@ ifneq ($(TW_WHITELIST_INPUT),)
+   LOCAL_CFLAGS += -DWHITELIST_INPUT=$(TW_WHITELIST_INPUT)
+ endif
+ 
++# Override the kernel-declared ABS_X/ABS_Y (and ABS_MT_POSITION_X/Y) min/max
++# with a board-measured range. Some resistive touch controllers (e.g. the
++# rohm_bu21025 on Benesse 40S404/TAB-A03-BR) declare or calibrate to the
++# full panel logical size but only actually reach a smaller sub-range in
++# practice, which throws off minuitwrp's linear scale-to-screen mapping.
++ifneq ($(TW_TOUCH_X_MIN),)
++  LOCAL_CFLAGS += -DTW_TOUCH_X_MIN=$(TW_TOUCH_X_MIN)
++endif
++ifneq ($(TW_TOUCH_X_MAX),)
++  LOCAL_CFLAGS += -DTW_TOUCH_X_MAX=$(TW_TOUCH_X_MAX)
++endif
++ifneq ($(TW_TOUCH_Y_MIN),)
++  LOCAL_CFLAGS += -DTW_TOUCH_Y_MIN=$(TW_TOUCH_Y_MIN)
++endif
++ifneq ($(TW_TOUCH_Y_MAX),)
++  LOCAL_CFLAGS += -DTW_TOUCH_Y_MAX=$(TW_TOUCH_Y_MAX)
++endif
++
+ ifeq ($(TW_HAPTICS_TSPDRV), true)
+   LOCAL_SRC_FILES += tspdrv.cpp
+   LOCAL_CFLAGS += -DTW_HAPTICS_TSPDRV
+diff --git a/minuitwrp/events.cpp b/minuitwrp/events.cpp
+index 7e5bc42..a6a8aa7 100755
+--- a/minuitwrp/events.cpp
++++ b/minuitwrp/events.cpp
+@@ -265,6 +265,23 @@ static int vk_init(struct ev *e)
+     printf("EV: MT minX: %d  maxX: %d  minY: %d  maxY: %d\n", e->mt_p.xi.minimum, e->mt_p.xi.maximum, e->mt_p.yi.minimum, e->mt_p.yi.maximum);
+ #endif
+ 
++#ifdef TW_TOUCH_X_MIN
++    e->p.xi.minimum = TW_TOUCH_X_MIN;
++    e->mt_p.xi.minimum = TW_TOUCH_X_MIN;
++#endif
++#ifdef TW_TOUCH_X_MAX
++    e->p.xi.maximum = TW_TOUCH_X_MAX;
++    e->mt_p.xi.maximum = TW_TOUCH_X_MAX;
++#endif
++#ifdef TW_TOUCH_Y_MIN
++    e->p.yi.minimum = TW_TOUCH_Y_MIN;
++    e->mt_p.yi.minimum = TW_TOUCH_Y_MIN;
++#endif
++#ifdef TW_TOUCH_Y_MAX
++    e->p.yi.maximum = TW_TOUCH_Y_MAX;
++    e->mt_p.yi.maximum = TW_TOUCH_Y_MAX;
++#endif
++
+     e->vks = (virtualkey *)malloc(sizeof(*e->vks) * e->vk_count);
+ 
+     for (i = 0; i < e->vk_count; ++i) {
