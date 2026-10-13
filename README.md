@@ -19,22 +19,6 @@ Expected kernel for firmware `02.05.000` (built 2018-03-14): 3,854,680 bytes,
 md5 `f3b3de4f3651acf70a5e88988f83b05f`. A different md5 means a different firmware build;
 it may still work, but is untested.
 
-## Flashing
-
-Back up the current recovery first, then write only `mmcblk0p2`:
-
-```sh
-adb shell su -c 'dd if=/dev/block/mmcblk0p2 of=/sdcard/stock-recovery.img bs=4096'
-adb pull /sdcard/stock-recovery.img
-adb push recovery.img /sdcard/recovery.img
-adb shell su -c 'dd if=/sdcard/recovery.img of=/dev/block/mmcblk0p2 bs=4096'
-adb reboot recovery
-```
-
-Read the partition back and compare checksums before rebooting. If you ever rebuild with
-changed mount points, boot the **new** recovery once (`adb reboot recovery`) before rebooting
-to system, because an already-running old instance keeps its old `recovery.fstab`.
-Holding Home while powering on from off also enters recovery.
 
 ## Building
 
